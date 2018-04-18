@@ -132,3 +132,22 @@ func TestRoundMoneyToString(t *testing.T) {
 	}
 	assert.Equal(t, "530", s)
 }
+
+func TestNegativeMoneyToString(t *testing.T) {
+	unregisterAllMoney()
+
+	err := RegisterNewMoney("btc", 8)
+	if err != nil {
+		t.Fail()
+	}
+	m, err := NewFromFloat(-1.22, "btc")
+	if err != nil {
+		t.Fail()
+	}
+
+	s, err := m.String()
+	if err != nil {
+		t.Fail()
+	}
+	assert.Equal(t, "-1.22", s)
+}

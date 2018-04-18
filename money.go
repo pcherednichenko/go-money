@@ -85,5 +85,31 @@ func (m Money) String() (string, error) {
 			result += "." + afterPoint
 		}
 	}
+
+	if m.value.Sign() < 0 {
+		return "-" + result, nil
+	}
+	return result, nil
+}
+
+func (m Money) Scan() (string, error) {
+	p, err := moneyPrecision(m)
+	if err != nil {
+		return "", err
+	}
+	abs := new(big.Int).Abs(m.value)
+	str := abs.String()
+	var result string
+	if len(str) < p {
+		result = "0."
+		result += strings.Repeat("0", p-len(str))
+		result += strings.TrimRight(str, "0")
+	} else {
+		result = str[:len(str)-p]
+		afterPoint := strings.TrimRight(str[len(str)-p:], "0")
+		if len(afterPoint) > 0 {
+			result += "." + afterPoint
+		}
+	}
 	return result, nil
 }
