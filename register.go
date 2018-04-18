@@ -25,14 +25,17 @@ func currencyPrecision(currency string) (int, error) {
 	return p, nil
 }
 
+func moneyPrecision(m Money) (int, error) {
+	p, ok := money[m.currency]
+	if !ok {
+		return 0, fmt.Errorf("currency with name '%s' not registered, "+errNeedToCreateBefore, m.currency)
+	}
+	return p, nil
+}
+
 func currencyRegistered(currency string) bool {
 	if _, ok := money[strings.ToUpper(currency)]; ok {
 		return true
 	}
 	return false
-}
-
-// unregisterAllMoney for tests
-func unregisterAllMoney() {
-	money = map[string]int{}
 }

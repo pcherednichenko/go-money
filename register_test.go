@@ -22,3 +22,8 @@ func TestRegisterAlreadyRegisteredMoney(t *testing.T) {
 	err = RegisterNewMoney("Usd", 8)
 	assert.Error(t, err)
 }
+
+// unregisterAllMoney for tests
+func unregisterAllMoney() {
+	money = map[string]int{}
+}
