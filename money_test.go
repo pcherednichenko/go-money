@@ -1,4 +1,4 @@
-package gomoney
+package money
 
 import (
 	"math/big"
@@ -23,13 +23,13 @@ func TestAddMoney(t *testing.T) {
 	if err != nil {
 		t.Fail()
 	}
-	res, err := m.Add(m2)
+	res := m.Add(m2)
 	if err != nil {
 		t.Fail()
 	}
 
 	assert.Equal(t, big.NewInt(122520100), res.value)
-	assert.Equal(t, "BTC", m.currency)
+	assert.Equal(t, "BTC", res.currency)
 }
 
 func TestSubMoney(t *testing.T) {
@@ -48,13 +48,77 @@ func TestSubMoney(t *testing.T) {
 	if err != nil {
 		t.Fail()
 	}
-	res, err := m.Sub(m2)
+	res := m.Sub(m2)
 	if err != nil {
 		t.Fail()
 	}
 
 	assert.Equal(t, big.NewInt(99000), res.value)
-	assert.Equal(t, "BTC", m.currency)
+	assert.Equal(t, "BTC", res.currency)
+}
+
+func TestMulRoundMoney(t *testing.T) {
+	unregisterAllMoney()
+
+	err := RegisterNewMoney("btc", 2)
+	if err != nil {
+		t.Fail()
+	}
+	m, err := NewFromFloat(20, "btc")
+	if err != nil {
+		t.Fail()
+	}
+
+	m2, err := NewFromFloat(6, "bTc")
+	if err != nil {
+		t.Fail()
+	}
+	res := m.Mul(m2)
+	if err != nil {
+		t.Fail()
+	}
+
+	assert.Equal(t, big.NewInt(12000), res.value)
+	assert.Equal(t, "BTC", res.currency)
+
+	s := res.String()
+	if err != nil {
+		t.Fail()
+	}
+
+	assert.Equal(t, "120", s)
+}
+
+func TestMulDecimalMoney(t *testing.T) {
+	unregisterAllMoney()
+
+	err := RegisterNewMoney("btc", 8)
+	if err != nil {
+		t.Fail()
+	}
+	m, err := NewFromFloat(40.05, "btc")
+	if err != nil {
+		t.Fail()
+	}
+
+	m2, err := NewFromFloat(0.1, "bTc")
+	if err != nil {
+		t.Fail()
+	}
+	res := m.Mul(m2)
+	if err != nil {
+		t.Fail()
+	}
+
+	assert.Equal(t, big.NewInt(400500000), res.value)
+	assert.Equal(t, "BTC", res.currency)
+
+	s := res.String()
+	if err != nil {
+		t.Fail()
+	}
+
+	assert.Equal(t, "4.005", s)
 }
 
 func TestMoneyToFloat(t *testing.T) {
@@ -69,7 +133,7 @@ func TestMoneyToFloat(t *testing.T) {
 		t.Fail()
 	}
 
-	f, err := m.Float64()
+	f := m.Float64()
 	if err != nil {
 		t.Fail()
 	}
@@ -88,7 +152,7 @@ func TestDecimalMoneyToString(t *testing.T) {
 		t.Fail()
 	}
 
-	s, err := m.String()
+	s := m.String()
 	if err != nil {
 		t.Fail()
 	}
@@ -107,7 +171,7 @@ func TestBigMoneyToString(t *testing.T) {
 		t.Fail()
 	}
 
-	s, err := m.String()
+	s := m.String()
 	if err != nil {
 		t.Fail()
 	}
@@ -126,7 +190,7 @@ func TestRoundMoneyToString(t *testing.T) {
 		t.Fail()
 	}
 
-	s, err := m.String()
+	s := m.String()
 	if err != nil {
 		t.Fail()
 	}
@@ -145,9 +209,34 @@ func TestNegativeMoneyToString(t *testing.T) {
 		t.Fail()
 	}
 
-	s, err := m.String()
+	s := m.String()
 	if err != nil {
 		t.Fail()
 	}
 	assert.Equal(t, "-1.22", s)
+}
+
+func TestCompareTwoMoney(t *testing.T) {
+	unregisterAllMoney()
+
+	err := RegisterNewMoney("btc", 8)
+	if err != nil {
+		t.Fail()
+	}
+
+	m, err := NewFromFloat(12.434, "btc")
+	if err != nil {
+		t.Fail()
+	}
+
+	m2, err := NewFromFloat(14.12, "btc")
+	if err != nil {
+		t.Fail()
+	}
+
+	result := m.GreaterThanOrEqual(m2)
+	assert.False(t, result)
+
+	result = m.LessThan(m2)
+	assert.True(t, result)
 }

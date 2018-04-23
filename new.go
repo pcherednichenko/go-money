@@ -1,4 +1,4 @@
-package gomoney
+package money
 
 import (
 	"fmt"

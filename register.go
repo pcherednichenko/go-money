@@ -1,4 +1,4 @@
-package gomoney
+package money
 
 import (
 	"fmt"
@@ -26,6 +26,9 @@ func currencyPrecision(currency string) (int, error) {
 }
 
 func moneyPrecision(m Money) (int, error) {
+	if len(m.currency) == 0 {
+		return 0, errEmptyCurrency
+	}
 	p, ok := money[m.currency]
 	if !ok {
 		return 0, fmt.Errorf("currency with name '%s' not registered, "+errNeedToCreateBefore, m.currency)

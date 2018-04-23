@@ -1,14 +1,8 @@
-# Go-money
-
-Package go-money you need to trade currency with the appropriate precision
-
-## Example of use:
-```go
 package money_test
 
 import (
 	"fmt"
-	
+
 	"github.com/cryptopay-dev/go-money"
 )
 
@@ -35,5 +29,3 @@ func ExampleMoney() {
 	// 7.23953
 	// true
 }
-
-```
