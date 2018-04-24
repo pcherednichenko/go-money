@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	tenInt    = big.NewInt(10)
+	tenInt = big.NewInt(10)
 )
 
 type Money struct {
@@ -44,6 +44,12 @@ func (m Money) Sub(m2 Money) Money {
 }
 
 func (m Money) Mul(m2 Money) Money {
+	if m.currency != m2.currency {
+		panic(fmt.Sprintf(
+			"try to mul currency '%s' with different currency '%s'",
+			m.currency, m2.currency),
+		)
+	}
 	p, err := moneyPrecision(m)
 	if err != nil {
 		panic(err)
@@ -55,6 +61,55 @@ func (m Money) Mul(m2 Money) Money {
 		value:    d3Result,
 		currency: m.currency,
 	}
+}
+
+func (m Money) MulFloat(f float64) Money {
+	if !currencyRegistered(m.currency) {
+		panic(fmt.Sprintf("currency with name %s not registered, "+errNeedToCreateBefore, m.currency))
+	}
+	m2, err := NewFromFloat(f, m.currency)
+	if err != nil {
+		panic(err)
+	}
+	res := m.Mul(m2)
+	return res
+}
+
+func (m Money) Div(m2 Money) Money {
+	if m.currency != m2.currency {
+		panic(fmt.Sprintf(
+			"try to div currency '%s' with different currency '%s'",
+			m.currency, m2.currency),
+		)
+	}
+	p, err := moneyPrecision(m)
+	if err != nil {
+		panic(err)
+	}
+	if m2.value.Sign() == 0 {
+		panic("money division by 0")
+	}
+
+	mul := new(big.Int).Exp(tenInt, big.NewInt(int64(p)), nil)
+	bigM := new(big.Int).Mul(m.value, mul)
+	newVal := new(big.Int).Quo(bigM, m2.value)
+
+	return Money{
+		value:    newVal,
+		currency: m.currency,
+	}
+}
+
+func (m Money) DivFloat(f float64) Money {
+	if !currencyRegistered(m.currency) {
+		panic(fmt.Sprintf("currency with name %s not registered, "+errNeedToCreateBefore, m.currency))
+	}
+	m2, err := NewFromFloat(f, m.currency)
+	if err != nil {
+		panic(err)
+	}
+	res := m.Div(m2)
+	return res
 }
 
 func (m Money) Float64() float64 {
@@ -89,7 +144,12 @@ func (m Money) String() string {
 		result += strings.Repeat("0", p-len(str))
 		result += strings.TrimRight(str, "0")
 	} else {
-		result = str[:len(str)-p]
+		before := str[:len(str)-p]
+		if len(before) != 0 {
+			result = before
+		} else {
+			result = "0"
+		}
 		afterPoint := strings.TrimRight(str[len(str)-p:], "0")
 		if len(afterPoint) > 0 {
 			result += "." + afterPoint

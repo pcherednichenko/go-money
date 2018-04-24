@@ -6,5 +6,5 @@ import (
 
 var (
 	errNeedToCreateBefore = "you need to call money.RegisterNewMoney() before using a new currency"
-	errEmptyCurrency = errors.New("money has empty currency")
+	errEmptyCurrency      = errors.New("money has empty currency")
 )

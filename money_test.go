@@ -240,3 +240,101 @@ func TestCompareTwoMoney(t *testing.T) {
 	result = m.LessThan(m2)
 	assert.True(t, result)
 }
+
+func TestDivTwoMoney(t *testing.T) {
+	unregisterAllMoney()
+
+	err := RegisterNewMoney("btc", 8)
+	if err != nil {
+		t.Fail()
+	}
+
+	m, err := NewFromFloat(12.048, "btc")
+	if err != nil {
+		t.Fail()
+	}
+
+	m2, err := NewFromFloat(2.4, "btc")
+	if err != nil {
+		t.Fail()
+	}
+
+	result := m.Div(m2)
+	assert.Equal(t, "5.02", result.String())
+}
+
+func TestDivTwoRoundMoney(t *testing.T) {
+	unregisterAllMoney()
+
+	err := RegisterNewMoney("btc", 8)
+	if err != nil {
+		t.Fail()
+	}
+
+	m, err := NewFromFloat(100, "btc")
+	if err != nil {
+		t.Fail()
+	}
+
+	m2, err := NewFromFloat(2, "btc")
+	if err != nil {
+		t.Fail()
+	}
+
+	result := m.Div(m2)
+	assert.Equal(t, "50", result.String())
+}
+
+func TestDivTwoSmallMoney(t *testing.T) {
+	unregisterAllMoney()
+
+	err := RegisterNewMoney("btc", 8)
+	if err != nil {
+		t.Fail()
+	}
+
+	m, err := NewFromFloat(0.000036, "btc")
+	if err != nil {
+		t.Fail()
+	}
+
+	m2, err := NewFromFloat(0.009, "btc")
+	if err != nil {
+		t.Fail()
+	}
+
+	result := m.Div(m2)
+	assert.Equal(t, "0.004", result.String())
+}
+
+func TestMulFloat(t *testing.T) {
+	unregisterAllMoney()
+
+	err := RegisterNewMoney("btc", 8)
+	if err != nil {
+		t.Fail()
+	}
+
+	m2, err := NewFromFloat(0.2, "btc")
+	if err != nil {
+		t.Fail()
+	}
+	res := m2.MulFloat(0.4)
+	assert.Equal(t, "0.08", res.String())
+}
+
+func TestDivFloat(t *testing.T) {
+	unregisterAllMoney()
+
+	err := RegisterNewMoney("btc", 8)
+	if err != nil {
+		t.Fail()
+	}
+
+	m2, err := NewFromFloat(0.2, "btc")
+	if err != nil {
+		t.Fail()
+	}
+	res := m2.DivFloat(0.8)
+	assert.Equal(t, "0.25", res.String())
+}
