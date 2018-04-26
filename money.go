@@ -1,6 +1,7 @@
 package money
 
 import (
+	"encoding/binary"
 	"fmt"
 	"math/big"
 	"strings"
@@ -15,6 +16,10 @@ type Money struct {
 	currency string
 }
 
+func (m Money) Currency() string {
+	return m.currency
+}
+
 func (m Money) Add(m2 Money) Money {
 	if m.currency != m2.currency {
 		panic(fmt.Sprintf(
@@ -22,9 +27,8 @@ func (m Money) Add(m2 Money) Money {
 			m.currency, m2.currency),
 		)
 	}
-	res := new(big.Int).Add(m.value, m2.value)
 	return Money{
-		value:    res,
+		value:    new(big.Int).Add(m.value, m2.value),
 		currency: m.currency,
 	}
 }
@@ -36,9 +40,8 @@ func (m Money) Sub(m2 Money) Money {
 			m.currency, m2.currency),
 		)
 	}
-	res := new(big.Int).Sub(m.value, m2.value)
 	return Money{
-		value:    res,
+		value:    new(big.Int).Sub(m.value, m2.value),
 		currency: m.currency,
 	}
 }
@@ -56,9 +59,8 @@ func (m Money) Mul(m2 Money) Money {
 	}
 	d3Full := new(big.Int).Mul(m.value, m2.value)
 	mul := new(big.Int).Exp(tenInt, big.NewInt(int64(p)), nil)
-	d3Result := new(big.Int).Quo(d3Full, mul)
 	return Money{
-		value:    d3Result,
+		value:    new(big.Int).Quo(d3Full, mul),
 		currency: m.currency,
 	}
 }
@@ -71,8 +73,7 @@ func (m Money) MulFloat(f float64) Money {
 	if err != nil {
 		panic(err)
 	}
-	res := m.Mul(m2)
-	return res
+	return m.Mul(m2)
 }
 
 func (m Money) Div(m2 Money) Money {
@@ -92,10 +93,9 @@ func (m Money) Div(m2 Money) Money {
 
 	mul := new(big.Int).Exp(tenInt, big.NewInt(int64(p)), nil)
 	bigM := new(big.Int).Mul(m.value, mul)
-	newVal := new(big.Int).Quo(bigM, m2.value)
 
 	return Money{
-		value:    newVal,
+		value:    new(big.Int).Quo(bigM, m2.value),
 		currency: m.currency,
 	}
 }
@@ -108,8 +108,16 @@ func (m Money) DivFloat(f float64) Money {
 	if err != nil {
 		panic(err)
 	}
-	res := m.Div(m2)
-	return res
+	return m.Div(m2)
+}
+
+// Neg returns -d.
+func (m Money) Neg() Money {
+	val := new(big.Int).Neg(m.value)
+	return Money{
+		value:    val,
+		currency: m.currency,
+	}
 }
 
 func (m Money) Float64() float64 {
@@ -167,9 +175,17 @@ func (m Money) Equal(m2 Money) bool {
 	return m.Cmp(m2) == 0
 }
 
-// Equals is deprecated, please use Equal method instead
-func (m Money) Equals(m2 Money) bool {
-	return m.Equal(m2)
+func (m Money) IsZero() bool {
+	return m.value.Sign() == 0
+}
+
+func (m Money) GreaterThanZero() bool {
+	return m.value.Cmp(big.NewInt(0)) == 1
+}
+
+func (m Money) GreaterThanOrEqualsZero() bool {
+	cmp := m.value.Cmp(big.NewInt(0))
+	return cmp == 1 || cmp == 0
 }
 
 // GreaterThan (GT) returns true when m is greater than m2
@@ -205,4 +221,41 @@ func (m Money) Cmp(m2 Money) int {
 		panic(fmt.Sprintf("try to compare moneys with different currencies: %s with %s", m.currency, m2.currency))
 	}
 	return m.value.Cmp(m2.value)
+}
+
+// MarshalJSON implements the json.Marshaler interface.
+func (m Money) MarshalJSON() ([]byte, error) {
+	return []byte("\"" + m.String() + "\""), nil
+}
+
+// MarshalText implements the encoding.TextMarshaler interface for XML
+// serialization.
+func (m Money) MarshalText() (text []byte, err error) {
+	return []byte(m.String()), nil
+}
+
+// MarshalBinary implements the encoding.BinaryMarshaler interface.
+func (m Money) MarshalBinary() (data []byte, err error) {
+	p, err := moneyPrecision(m)
+	if err != nil {
+		return nil, err
+	}
+	// Write the exponent first since it's a fixed size
+	v1 := make([]byte, 4)
+	binary.BigEndian.PutUint32(v1, uint32(p))
+
+	// Add the value
+	var v2 []byte
+	if v2, err = m.value.GobEncode(); err != nil {
+		return
+	}
+
+	// Return the byte array
+	data = append(v1, v2...)
+	return
+}
+
+// GobEncode implements the gob.GobEncoder interface for gob serialization.
+func (m Money) GobEncode() ([]byte, error) {
+	return m.MarshalBinary()
 }

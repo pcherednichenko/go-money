@@ -31,6 +31,10 @@ func NewFromInt(value int64, currency string) (Money, error) {
 	}, nil
 }
 
+func NewZero(currency string) (Money, error) {
+	return New(0, currency)
+}
+
 func NewFromString(value string, currency string) (Money, error) {
 	p, err := currencyPrecision(currency)
 	if err != nil {

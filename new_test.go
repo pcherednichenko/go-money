@@ -103,6 +103,23 @@ func TestNewFromFloat(t *testing.T) {
 	assert.Equal(t, "EUR", m.currency)
 }
 
+func TestNewZero(t *testing.T) {
+	unregisterAllMoney()
+
+	err := RegisterNewMoney("eUr", 2)
+	if err != nil {
+		t.Fail()
+	}
+	m, err := NewZero("Eur")
+	if err != nil {
+		t.Fail()
+	}
+
+	assert.Equal(t, big.NewInt(0), m.value)
+	assert.Equal(t, "EUR", m.currency)
+	assert.Equal(t, "0.0", m.String())
+}
+
 func TestNewFromLongFloat(t *testing.T) {
 	unregisterAllMoney()
 

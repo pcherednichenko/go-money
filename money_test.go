@@ -338,3 +338,46 @@ func TestDivFloat(t *testing.T) {
 	res := m2.DivFloat(0.8)
 	assert.Equal(t, "0.25", res.String())
 }
+
+func TestNeg(t *testing.T) {
+	unregisterAllMoney()
+
+	err := RegisterNewMoney("btc", 8)
+	if err != nil {
+		t.Fail()
+	}
+
+	m, err := NewFromFloat(99.9, "btc")
+	if err != nil {
+		t.Fail()
+	}
+	res := m.Neg()
+	assert.Equal(t, "-99.9", res.String())
+}
+
+func TestCompareToZero(t *testing.T) {
+	unregisterAllMoney()
+
+	err := RegisterNewMoney("btc", 8)
+	if err != nil {
+		t.Fail()
+	}
+
+	m, err := NewFromFloat(-0.1, "btc")
+	if err != nil {
+		t.Fail()
+	}
+	assert.Equal(t, false, m.GreaterThanZero())
+
+	m2, err := NewFromFloat(0.1, "btc")
+	if err != nil {
+		t.Fail()
+	}
+	assert.Equal(t, true, m2.GreaterThanZero())
+
+	m3, err := NewFromFloat(0.0, "btc")
+	if err != nil {
+		t.Fail()
+	}
+	assert.Equal(t, true, m3.IsZero())
+}
