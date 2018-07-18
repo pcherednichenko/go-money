@@ -9,7 +9,7 @@ package money_test
 import (
 	"fmt"
 	
-	"github.com/cryptopay-dev/go-money"
+	"github.com/pcherednichenko/go-money"
 )
 
 func ExampleMoney() {
